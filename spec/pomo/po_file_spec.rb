@@ -1,4 +1,5 @@
-require File.expand_path("../spec_helper", File.dirname(__FILE__))
+# encoding: UTF-8
+require File.expand_path("../../rspec_helper", __FILE__)
 
 include GetPomo
 describe GetPomo::PoFile do

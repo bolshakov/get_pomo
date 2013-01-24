@@ -21,6 +21,10 @@ module GetPomo
       {:msgid=>msgid,:msgstr=>msgstr,:comment=>comment}.reject{|k,value|value.nil?}
     end
 
+    def ==(other)
+      return self.to_hash == other.to_hash
+    end
+
     def complete?
       not msgid.nil? and not msgstr.nil?
     end

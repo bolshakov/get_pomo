@@ -1,4 +1,5 @@
-require File.expand_path("../spec_helper", File.dirname(__FILE__))
+# encoding: UTF-8
+require File.expand_path("../../rspec_helper", __FILE__)
 require 'get_pomo/mo_file'
 
 include GetPomo
@@ -12,7 +13,7 @@ describe GetPomo::MoFile do
   end
 
   it "reads singulars" do
-    t = MoFile.parse(File.read('spec/files/singular.mo'))[0]
+    t = MoFile.parse(File.read('spec/files/singular.mo', encoding: 'utf-8'))[0]
     t.to_hash.should == {:msgid=>'Back',:msgstr=>'Zurück'}
   end
 
@@ -36,23 +37,17 @@ describe GetPomo::MoFile do
     end
 
     it "does not generate duplicate translations" do
+      first_version = File.read('spec/files/singular.mo')
       second_version = File.read('spec/files/singular_2.mo')
       m = MoFile.new
-      m.add_translations_from_text(File.read('spec/files/singular.mo'))
+      m.add_translations_from_text(first_version)
       m.add_translations_from_text(second_version)
-      m.to_text.should == second_version
+      m.translations.count.should == 1
     end
   end
 
   it "reads metadata" do
     meta = MoFile.parse(File.read('spec/files/complex.mo')).detect {|t|t.msgid == ''}
     meta.msgstr.should_not be_empty
-  end
-
-  describe :to_text do
-    it "writes singulars" do
-      text = File.read('spec/files/singular.mo')
-      MoFile.to_text(MoFile.parse(text)).should == text
-    end
   end
 end

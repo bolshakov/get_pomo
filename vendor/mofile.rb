@@ -15,11 +15,7 @@
     $Id: mo.rb,v 1.10 2008/06/17 16:40:52 mutoh Exp $
 =end
 
-require File.join(File.dirname(__FILE__),'iconv')
 require 'stringio'
-
-#Modifications:
-#  use Iconv or FastGettext::Icvon
 
 module GetPomo
   module GetText
@@ -129,7 +125,7 @@ module GetPomo
         clear
         for i in 0...header.nstrings
           io.pos = trans_table_data[i * 2 + 1]
-          str = io.read(trans_table_data[i * 2 + 0])
+          str = io.read(trans_table_data[i * 2 + 0]).force_encoding('utf-8')
 
           if (! original_strings[i]) || original_strings[i] == ""
             if str
@@ -149,18 +145,8 @@ module GetPomo
               @plural = "0" unless @plural
             end
           else
-            if @output_charset
-              begin
-                iconv = Iconv || FastGettext::Iconv
-                str = iconv.conv(@output_charset, @charset, str) if @charset
-              rescue iconv::Failure
-                if $DEBUG
-                  warn "@charset = ", @charset
-                  warn"@output_charset = ", @output_charset
-                  warn "msgid = ", original_strings[i]
-                  warn "msgstr = ", str
-                end
-              end
+            if @output_charset && @charset
+              str = str.encode(@output_charset, @charset)
             end
           end
           self[original_strings[i]] = str.freeze
@@ -203,77 +189,10 @@ module GetPomo
         hval
       end
 
-      def save_to_stream(io)
-        #Save data as little endian format.
-        header_size = 4 * 7
-        table_size  = 4 * 2 * size
-
-        hash_table_size = next_prime((size * 4) / 3)
-        hash_table_size = 3 if hash_table_size <= 2
-        header = Header.new(
-                            MAGIC_LITTLE_ENDIAN,          # magic
-                            0,                            # revision
-                            size,                         # nstrings
-                            header_size,                  # orig_table_offset
-                            header_size + table_size,     # translated_table_offset
-                            hash_table_size,              # hash_table_size
-                            header_size + table_size * 2  # hash_table_offset
-                            )
-        io.write(header.to_a.pack('a4V*'))
-
-        ary = to_a
-        ary.sort!{|a, b| a[0] <=> b[0]} # sort by original string
-
-        pos = header.hash_table_size * 4 + header.hash_table_offset
-
-        orig_table_data = Array.new()
-        ary.each{|item, _|
-          orig_table_data.push(item.size)
-          orig_table_data.push(pos)
-          pos += item.size + 1 # +1 is <NUL>
-        }
-        io.write(orig_table_data.pack('V*'))
-
-        trans_table_data = Array.new()
-        ary.each{|_, item|
-          trans_table_data.push(item.size)
-          trans_table_data.push(pos)
-          pos += item.size + 1 # +1 is <NUL>
-        }
-        io.write(trans_table_data.pack('V*'))
-
-        hash_tab = Array.new(hash_table_size)
-        j = 0
-        ary[0...size].each {|key, _|
-          hash_val = hash_string(key)
-          idx = hash_val % hash_table_size
-          if hash_tab[idx] != nil
-            incr = 1 + (hash_val % (hash_table_size - 2))
-            begin
-              if (idx >= hash_table_size - incr)
-                idx -= hash_table_size - incr
-              else
-                idx += incr
-              end
-            end until (hash_tab[idx] == nil)
-          end
-          hash_tab[idx] = j + 1
-          j += 1
-        }
-        hash_tab.collect!{|i| i ? i : 0}
-
-        io.write(hash_tab.pack('V*'))
-
-        ary.each{|item, _| io.write(item); io.write("\0") }
-        ary.each{|_, item| io.write(item); io.write("\0") }
-
-        self
-      end
-
       def load_from_file(filename)
         @filename = filename
         begin
-          File.open(filename, 'rb'){|f| load_from_stream(f)}
+          File.open(filename, 'rb:utf-8'){|f| load_from_stream(f)}
         rescue => e
           e.set_backtrace("File: #{@filename}")
           raise e

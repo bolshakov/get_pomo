@@ -1,4 +1,4 @@
-require 'spec/spec_helper'
+require File.expand_path("../rspec_helper", __FILE__)
 
 describe GetPomo do
   it "has a VERSION" do

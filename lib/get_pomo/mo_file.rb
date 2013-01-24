@@ -9,11 +9,6 @@ module GetPomo
       MoFile.new.add_translations_from_text(text)
     end
 
-    def self.to_text(translations)
-      m = MoFile.new(:translations=>translations)
-      m.to_text
-    end
-
     attr_reader :translations
 
     def initialize(options = {})
@@ -31,18 +26,16 @@ module GetPomo
           translation.msgid = msgid
           translation.msgstr = msgstr
         end
-        translation
+
+        if @translations.include?(translation)
+          nil
+        else
+          translation
+        end
       end
-    end
 
-    def to_text
-      m = GetPomo::GetText::MOFile.new
-      GetPomo.unique_translations(translations).each {|t| m[plural_to_string(t.msgid)] = plural_to_string(t.msgstr)}
-
-      io = StringIO.new
-      m.save_to_stream io
-      io.rewind
-      io.read
+      @translations.compact!
+      @translations
     end
 
     private
