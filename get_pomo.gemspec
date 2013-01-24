@@ -35,9 +35,8 @@ Gem::Specification.new do |s|
      "spec/pomo/po_file_spec.rb",
      "spec/pomo/translation_spec.rb",
      "spec/pomo_spec.rb",
-     "spec/spec_helper.rb",
+     "spec/rspec_helper.rb",
      "vendor/README.rdoc",
-     "vendor/iconv.rb",
      "vendor/mofile.rb"
   ]
   s.homepage = %q{http://github.com/grosser/get_pomo}
@@ -46,7 +45,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Ruby/Gettext: A .po and .mo file parser/generator}
   s.test_files = [
-    "spec/spec_helper.rb",
+    "spec/rspec_helper.rb",
      "spec/pomo_spec.rb",
      "spec/pomo/translation_spec.rb",
      "spec/pomo/mo_file_spec.rb",
