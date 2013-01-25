@@ -59,10 +59,16 @@ describe GetPomo::PoFile do
       p.to_text.should == text
     end
 
-    it "keeps uniqueness when converting to_text" do
-      text = %Q(msgid "xxx"\nmsgstr "aaa")
+    it "should handle multiline plural strings when converting to_text" do
+      text = File.read('spec/files/multiline_plural.po').strip
       p = PoFile.new
-      p.add_translations_from_text(%Q(msgid "xxx"\nmsgstr "yyy"))
+      p.add_translations_from_text(text)
+      p.to_text.should == text
+    end
+
+    it "should handle multiline strings when converting to_text" do
+      text = File.read('spec/files/multiline.po').strip
+      p = PoFile.new
       p.add_translations_from_text(text)
       p.to_text.should == text
     end
@@ -115,6 +121,14 @@ describe GetPomo::PoFile do
       PoFile.to_text(PoFile.parse(text)).should == text
     end
 
+    # TODO: Thats not right. It's aloowed to have
+    #   identical key in the same .po file. To avoid confusion you
+    #   can specify context of the message.
+    #   Example:
+    #      msgctxt context
+    #      msgid untranslated-string
+    #      msgstr translated-string
+    #
     it "only uses the latest of identicals msgids" do
       text = %Q(msgid "one"\nmsgstr "1"\nmsgid "one"\nmsgstr "001")
       PoFile.to_text(PoFile.parse(text)).should ==  %Q(msgid "one"\nmsgstr "001")

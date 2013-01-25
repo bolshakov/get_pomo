@@ -42,18 +42,18 @@ module GetPomo
         comment = translation.comment.to_s.split(/\n|\r\n/).map{|line|"##{line}\n"}*''
         msgid_and_msgstr = if translation.plural?
           msgids =
-          %Q(msgid "#{translation.msgid[0]}"\n)+
-          %Q(msgid_plural "#{translation.msgid[1]}"\n)
+          %Q(msgid #{format_text(translation.msgid[0])}\n)+
+          %Q(msgid_plural #{format_text(translation.msgid[1])}\n)
 
           msgstrs = []
           translation.msgstr.each_with_index do |msgstr,index|
-            msgstrs << %Q(msgstr[#{index}] "#{msgstr}")
+            msgstrs << %Q(msgstr[#{index}] #{format_text(msgstr)})
           end
 
           msgids + (msgstrs*"\n")
         else
-          %Q(msgid "#{translation.msgid}"\n)+
-          %Q(msgstr "#{translation.msgstr}")
+          %Q(msgid #{format_text(translation.msgid)}\n)+
+          %Q(msgstr #{format_text(translation.msgstr)})
         end
 
         comment + msgid_and_msgstr
@@ -61,6 +61,18 @@ module GetPomo
     end
 
     private
+
+    def format_text(text)
+      lines = text.lines
+      if lines.count == 1
+        "\"#{lines.first}\""
+      else
+        lines.inject('""') { |string, line|
+          #pp "\"#{line.rstrip}\\n\"\n"
+          string += "\n\"#{line.rstrip}\\n\""
+        }.strip
+      end
+    end
 
     #e.g. # fuzzy
     def comment?(line)
