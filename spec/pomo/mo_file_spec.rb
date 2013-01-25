@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require File.expand_path("../../rspec_helper", __FILE__)
+require 'spec_helper'
 require 'get_pomo/mo_file'
 
 include GetPomo
