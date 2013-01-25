@@ -90,8 +90,27 @@ module GetPomo
     #"hello" -> hello
     def add_string(string)
       return if string.strip.empty?
-      raise "not string format: #{string.inspect} on line #{@line_number}" unless string.strip =~ /^['"](.*)['"]$/
-      @current_translation.add_text($1,:to=>@last_method)
+
+      # A string passed directly to method. E.g.
+      #  msgid "the string"
+      #  'string' equals "the string"
+      #
+      if  string.strip =~ /^['"](.*)['"]$/
+        string =$1
+
+      # A string passed as mutiline string. E.g.
+      #  msgid ""
+      #  "the string\n"
+      #  "the end\n"
+      #  'string' equals "\n\"the string\n\""
+      #
+      elsif string.lines.count == 2 && string.lines.to_a.last.strip  =~ /^['"](.*)['"]$/
+        string =$1
+      else
+        raise "not string format: #{string.inspect} on line #{@line_number}"
+      end
+
+      @current_translation.add_text(string.strip.gsub("\\n", "\n"), :to=>@last_method)
     end
 
     def translation_complete?
@@ -100,7 +119,21 @@ module GetPomo
     end
   
     def store_translation
-      @translations += [@current_translation] if @current_translation.complete?
+      if @current_translation.complete?
+        # remove trailing newlines
+        [:msgstr, :msgid].each do |method|
+          value = @current_translation.send(method)
+
+          value = if value.kind_of? Array
+            value.map &:strip
+          else
+            value.strip
+          end
+          @current_translation.send("#{method}=", value)
+        end
+
+        @translations.push @current_translation
+      end
     end
 
     def start_new_translation

@@ -24,8 +24,8 @@ describe GetPomo::PoFile do
     end
 
     it "parses a multiline msgid/msgstr" do
-      t = PoFile.parse(%Q(msgid "xxx"\n"aaa"\n\n\nmsgstr ""\n"bbb"))
-      t[0].to_hash.should == {:msgid=>'xxxaaa',:msgstr=>'bbb'}
+      t = PoFile.parse(File.read('spec/files/multiline.po'))
+      t[0].to_hash.should == {:msgid=>"Good\nMorning", :msgstr=>"Доброе\nутро"}
     end
 
     it "parses simple comments" do
@@ -71,6 +71,11 @@ describe GetPomo::PoFile do
   it "adds plural translations" do
     t = PoFile.parse(%Q(msgid "singular"\nmsgid_plural "plural"\nmsgstr[0] "one"\nmsgstr[1] "many"))
     t[0].to_hash.should == {:msgid=>['singular','plural'],:msgstr=>['one','many']}
+  end
+
+  it "adds multiline plural translations" do
+    t = PoFile.parse(File.read('spec/files/multiline_plural.po'))
+    t[0].to_hash.should == {:msgid=>["Multiline\nsingular", "Multiline\nplural"], :msgstr=>["Multiline\none", "Multiline\nany"]}
   end
 
   it "does not fail on empty string" do

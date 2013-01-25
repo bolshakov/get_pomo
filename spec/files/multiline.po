@@ -1,0 +1,6 @@
+msgid ""
+"Good\n"
+"Morning\n"
+msgstr ""
+"Доброе\n"
+"утро\n"

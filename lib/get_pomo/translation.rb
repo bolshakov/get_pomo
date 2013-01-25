@@ -1,6 +1,18 @@
 module GetPomo
   class Translation
     FUZZY_REGEX = /^\s*fuzzy\s*$/
+
+    # msgstr=(text)
+    #   _text_ may be Array or String
+    # Examples:
+    #   plural:
+    #     msgstr = ['the first', 'the second', 'the third']
+    #   or:
+    #     msgstr = ['the first', nil,'the third']
+    #
+    #   singular:
+    #     msgstr = 'the thing'
+    #
     attr_accessor :msgid, :msgstr, :comment
 
     def add_text(text,options)
