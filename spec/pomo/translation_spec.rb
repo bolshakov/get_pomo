@@ -84,7 +84,7 @@ describe GetPomo::Translation do
     it{should_not be_fuzzy}
 
     it "is fuzzy if a fuzzy comment was added" do
-      subject.add_text("fuzzy",:to=>:comment)
+      subject.add_text(", fuzzy",:to=>:comment)
       should be_fuzzy
     end
 
@@ -101,12 +101,12 @@ describe GetPomo::Translation do
     it "changes comment when made fuzzy through fuzzy=" do
       subject.comment = "hello"
       subject.fuzzy = true
-      subject.comment.should == "hello\nfuzzy"
+      subject.comment.should == "hello\n, fuzzy"
     end
 
     it "changes empty comment when made fuzzy through fuzzy=" do
       subject.fuzzy = true
-      subject.comment.should == "\nfuzzy"
+      subject.comment.should == "\n, fuzzy"
     end
 
     it "preserves comments when making fuzzy/unfuzzy" do
